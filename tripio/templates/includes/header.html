@@ -1,0 +1,77 @@
+<div class="container">
+    <div class="row align-items-center py-3">
+        <!-- Logo -->
+        <div class="col-md-3">
+            <a href="{% url 'core:home' %}" class="logo">
+                <img src="{% static 'img/logo.png' %}" alt="{{ APP_NAME }} Logo" class="img-fluid">
+            </a>
+        </div>
+        
+        <!-- Search Bar -->
+        <div class="col-md-5">
+            <form action="{% url 'packages:search' %}" method="get" class="search-form">
+                <div class="input-group">
+                    <input type="text" name="q" class="form-control" placeholder="Search destinations, packages..." aria-label="Search" value="{{ request.GET.q }}">
+                    <button class="btn btn-primary" type="submit">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- User Navigation -->
+        <div class="col-md-4 text-end">
+            <div class="user-nav">
+                {% if user.is_authenticated %}
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            {% if user.profile_image %}
+                                <img src="{{ user.profile_image.url }}" alt="{{ user.username }}" class="user-avatar">
+                            {% else %}
+                                <i class="fas fa-user-circle"></i>
+                            {% endif %}
+                            {{ user.username }}
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            {% if user.is_buyer %}
+                                <li><a class="dropdown-item" href="{% url 'dashboard:buyer_dashboard' %}">My Dashboard</a></li>
+                                <li><a class="dropdown-item" href="{% url 'dashboard:buyer_bookings' %}">My Bookings</a></li>
+                                <li><a class="dropdown-item" href="{% url 'dashboard:buyer_wishlist' %}">Wishlist</a></li>
+                            {% elif user.is_seller %}
+                                <li><a class="dropdown-item" href="{% url 'dashboard:seller_dashboard' %}">Seller Dashboard</a></li>
+                                <li><a class="dropdown-item" href="{% url 'dashboard:seller_packages' %}">My Packages</a></li>
+                                <li><a class="dropdown-item" href="{% url 'dashboard:seller_bookings' %}">Bookings</a></li>
+                            {% elif user.is_admin %}
+                                <li><a class="dropdown-item" href="{% url 'dashboard:admin_dashboard' %}">Admin Dashboard</a></li>
+                                <li><a class="dropdown-item" href="{% url 'admin:index' %}">Admin Panel</a></li>
+                            {% endif %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">My Profile</a></li>
+                            <li><a class="dropdown-item" href="{% url 'accounts:settings' %}">Settings</a></li>
+                            <li><a class="dropdown-item" href="{% url 'accounts:logout' %}">Logout</a></li>
+                        </ul>
+                    </div>
+                {% else %}
+                    <a href="{% url 'accounts:login' %}" class="btn btn-outline-primary me-2">Login</a>
+                    <a href="{% url 'accounts:register' %}" class="btn btn-primary">Sign Up</a>
+                {% endif %}
+                
+                <!-- Language Selector -->
+                <div class="dropdown d-inline-block ms-2">
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-globe"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
+                        {% for code, name in LANGUAGES %}
+                            <li>
+                                <a class="dropdown-item {% if LANGUAGE_CODE == code %}active{% endif %}" href="{% url 'core:set_language' %}?language={{ code }}&next={{ request.path }}">
+                                    {{ name }}
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

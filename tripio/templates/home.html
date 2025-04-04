@@ -1,0 +1,438 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ APP_NAME }} - Your Travel Adventure Awaits{% endblock %}
+
+{% block meta_description %}Find and book unique travel experiences with {{ APP_NAME }}. Discover hidden gems, popular destinations, and authentic adventures around the world.{% endblock %}
+
+{% block body_class %}home-page{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="hero-slider">
+        <div class="hero-slide" style="background-image: url('{% static 'img/hero/mountains.jpg' %}');">
+            <div class="container">
+                <div class="hero-content">
+                    <h1 class="display-4">Discover Your Next Adventure</h1>
+                    <p class="lead">Explore unique destinations and experiences around the world</p>
+                    <a href="{% url 'packages:list' %}" class="btn btn-primary btn-lg">Explore Packages</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Search Form -->
+    <div class="search-box">
+        <div class="container">
+            <form action="{% url 'packages:search' %}" method="get" class="advanced-search-form">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label for="destination" class="form-label">Destination</label>
+                        <select name="destination" id="destination" class="form-select">
+                            <option value="">Where would you like to go?</option>
+                            {% for region in regions %}
+                                <option value="{{ region.id }}">{{ region.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="date_range" class="form-label">Date Range</label>
+                        <input type="text" name="date_range" id="date_range" class="form-control date-picker" placeholder="Any date">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="travelers" class="form-label">Travelers</label>
+                        <select name="travelers" id="travelers" class="form-select">
+                            <option value="1">1 Traveler</option>
+                            <option value="2">2 Travelers</option>
+                            <option value="3">3 Travelers</option>
+                            <option value="4">4 Travelers</option>
+                            <option value="5">5+ Travelers</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="travel_type" class="form-label">Travel Type</label>
+                        <select name="travel_type" id="travel_type" class="form-select">
+                            <option value="">Any Type</option>
+                            <option value="adventure">Adventure</option>
+                            <option value="cultural">Cultural</option>
+                            <option value="beach">Beach</option>
+                            <option value="wildlife">Wildlife</option>
+                            <option value="urban">Urban</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">&nbsp;</label>
+                        <button type="submit" class="btn btn-primary w-100">Search</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Destinations -->
+<section class="featured-destinations py-5">
+    <div class="container">
+        <div class="section-header text-center mb-5">
+            <h2>Featured Destinations</h2>
+            <p>Explore our hand-picked destinations from around the world</p>
+        </div>
+        
+        <div class="row g-4">
+            {% for destination in featured_destinations %}
+                <div class="col-md-4">
+                    <div class="destination-card">
+                        <div class="destination-image">
+                            <img src="{{ destination.main_image.url }}" alt="{{ destination.name }}" class="img-fluid">
+                            <div class="destination-overlay">
+                                <a href="{{ destination.get_absolute_url }}" class="btn btn-sm btn-light">Explore</a>
+                            </div>
+                        </div>
+                        <div class="destination-details">
+                            <h3><a href="{{ destination.get_absolute_url }}">{{ destination.name }}</a></h3>
+                            <div class="destination-meta">
+                                <span><i class="fas fa-map-marker-alt"></i> {{ destination.region.name }}</span>
+                                <span><i class="fas fa-star"></i> {{ destination.average_rating }}</span>
+                            </div>
+                            <p>{{ destination.short_description|truncatewords:15 }}</p>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12 text-center">
+                    <p>No featured destinations available at the moment.</p>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="{% url 'destinations:list' %}" class="btn btn-outline-primary">View All Destinations</a>
+        </div>
+    </div>
+</section>
+
+<!-- Popular Packages -->
+<section class="popular-packages py-5 bg-light">
+    <div class="container">
+        <div class="section-header text-center mb-5">
+            <h2>Popular Travel Packages</h2>
+            <p>Discover our most booked and highest-rated travel experiences</p>
+        </div>
+        
+        <div class="row g-4">
+            {% for package in popular_packages %}
+                <div class="col-md-4">
+                    <div class="package-card">
+                        <div class="package-image">
+                            <img src="{{ package.main_image.url }}" alt="{{ package.title }}" class="img-fluid">
+                            {% if package.discount_price %}
+                                <div class="package-badge">{{ package.get_discount_percentage }}% OFF</div>
+                            {% endif %}
+                        </div>
+                        <div class="package-details">
+                            <h3><a href="{{ package.get_absolute_url }}">{{ package.title }}</a></h3>
+                            <div class="package-meta">
+                                <span><i class="fas fa-map-marker-alt"></i> {{ package.destinations.first.name }}</span>
+                                <span><i class="fas fa-clock"></i> {{ package.duration_days }} days</span>
+                                <span><i class="fas fa-star"></i> {{ package.average_rating }}</span>
+                            </div>
+                            <p>{{ package.short_description|truncatewords:15 }}</p>
+                            <div class="package-footer">
+                                <div class="package-price">
+                                    {% if package.discount_price %}
+                                        <span class="original-price">{{ package.currency }} {{ package.base_price }}</span>
+                                        <span class="current-price">{{ package.currency }} {{ package.discount_price }}</span>
+                                    {% else %}
+                                        <span class="current-price">{{ package.currency }} {{ package.base_price }}</span>
+                                    {% endif %}
+                                </div>
+                                <a href="{{ package.get_absolute_url }}" class="btn btn-sm btn-primary">View Details</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12 text-center">
+                    <p>No popular packages available at the moment.</p>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="{% url 'packages:list' %}" class="btn btn-outline-primary">View All Packages</a>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section py-5">
+    <div class="container">
+        <div class="section-header text-center mb-5">
+            <h2>Why Choose {{ APP_NAME }}</h2>
+            <p>We're committed to making your travel experience exceptional</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="feature-card text-center">
+                    <div class="feature-icon">
+                        <i class="fas fa-globe"></i>
+                    </div>
+                    <h3>Curated Destinations</h3>
+                    <p>Hand-picked destinations and experiences to ensure you discover the best places to visit.</p>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="feature-card text-center">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>Secure Booking</h3>
+                    <p>Your payments and personal information are protected with advanced security measures.</p>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="feature-card text-center">
+                    <div class="feature-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <h3>24/7 Support</h3>
+                    <p>Our support team is available round-the-clock to assist with any questions or issues.</p>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="feature-card text-center">
+                    <div class="feature-icon">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <h3>Best Price Guarantee</h3>
+                    <p>We offer competitive prices and will match any lower price you find elsewhere.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials -->
+<section class="testimonials-section py-5 bg-light">
+    <div class="container">
+        <div class="section-header text-center mb-5">
+            <h2>What Our Travelers Say</h2>
+            <p>Hear from travelers who have experienced our packages</p>
+        </div>
+        
+        <div class="testimonial-slider">
+            {% for review in featured_reviews %}
+                <div class="testimonial-item">
+                    <div class="testimonial-content">
+                        <div class="testimonial-rating">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= review.rating %}
+                                    <i class="fas fa-star"></i>
+                                {% else %}
+                                    <i class="far fa-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <blockquote>
+                            <p>{{ review.content|truncatewords:30 }}</p>
+                        </blockquote>
+                        <div class="testimonial-author">
+                            <div class="author-image">
+                                {% if review.user.profile_image %}
+                                    <img src="{{ review.user.profile_image.url }}" alt="{{ review.user.get_full_name }}" class="img-fluid rounded-circle">
+                                {% else %}
+                                    <img src="{% static 'img/default-avatar.png' %}" alt="{{ review.user.get_full_name }}" class="img-fluid rounded-circle">
+                                {% endif %}
+                            </div>
+                            <div class="author-details">
+                                <h4>{{ review.user.get_full_name }}</h4>
+                                <p>{{ review.package.title }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="testimonial-item">
+                    <div class="testimonial-content">
+                        <div class="testimonial-rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <blockquote>
+                            <p>The travel packages offered by {{ APP_NAME }} are exceptional. I had an amazing experience exploring new destinations with their well-organized itineraries.</p>
+                        </blockquote>
+                        <div class="testimonial-author">
+                            <div class="author-image">
+                                <img src="{% static 'img/default-avatar.png' %}" alt="John Doe" class="img-fluid rounded-circle">
+                            </div>
+                            <div class="author-details">
+                                <h4>John Doe</h4>
+                                <p>Mountain Trek Adventure</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Newsletter -->
+<section class="newsletter-section py-5">
+    <div class="container">
+        <div class="newsletter-wrapper text-center">
+            <h2>Stay Updated with Travel Inspirations</h2>
+            <p>Subscribe to our newsletter for travel tips, new destinations, and exclusive offers</p>
+            
+            <form action="{% url 'core:newsletter_subscribe' %}" method="post" class="newsletter-form">
+                {% csrf_token %}
+                <div class="input-group">
+                    <input type="email" name="email" class="form-control" placeholder="Your email address" required>
+                    <button class="btn btn-primary" type="submit">Subscribe</button>
+                </div>
+                <div class="form-check mt-2">
+                    <input type="checkbox" class="form-check-input" id="newsletter_consent" name="consent" required>
+                    <label class="form-check-label" for="newsletter_consent">
+                        I agree to receive travel updates and offers from {{ APP_NAME }}
+                    </label>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<!-- Travel Blog Highlights -->
+<section class="blog-highlights py-5 bg-light">
+    <div class="container">
+        <div class="section-header text-center mb-5">
+            <h2>Travel Inspiration</h2>
+            <p>Read our latest travel stories and tips</p>
+        </div>
+        
+        <div class="row g-4">
+            {% for post in blog_posts %}
+                <div class="col-md-4">
+                    <div class="blog-card">
+                        <div class="blog-image">
+                            <img src="{{ post.featured_image.url }}" alt="{{ post.title }}" class="img-fluid">
+                        </div>
+                        <div class="blog-details">
+                            <div class="blog-meta">
+                                <span><i class="fas fa-calendar-alt"></i> {{ post.published_date|date:"F d, Y" }}</span>
+                                <span><i class="fas fa-user"></i> {{ post.author.get_full_name }}</span>
+                            </div>
+                            <h3><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></h3>
+                            <p>{{ post.excerpt|truncatewords:15 }}</p>
+                            <a href="{{ post.get_absolute_url }}" class="read-more">Read More <i class="fas fa-arrow-right"></i></a>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-md-4">
+                    <div class="blog-card">
+                        <div class="blog-image">
+                            <img src="{% static 'img/blog/blog-sample-1.jpg' %}" alt="Travel Blog Post" class="img-fluid">
+                        </div>
+                        <div class="blog-details">
+                            <div class="blog-meta">
+                                <span><i class="fas fa-calendar-alt"></i> April 4, 2025</span>
+                                <span><i class="fas fa-user"></i> Travel Expert</span>
+                            </div>
+                            <h3><a href="#">10 Hidden Gems in Southeast Asia</a></h3>
+                            <p>Discover amazing off-the-beaten-path destinations that will make your Southeast Asia adventure unforgettable.</p>
+                            <a href="#" class="read-more">Read More <i class="fas fa-arrow-right"></i></a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="{% url 'core:blog' %}" class="btn btn-outline-primary">View All Posts</a>
+        </div>
+    </div>
+</section>
+
+<!-- App Promotion -->
+<section class="app-promotion py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h2>Take {{ APP_NAME }} With You Everywhere</h2>
+                <p class="lead">Download our mobile app to access your bookings, discover new destinations, and get personalized recommendations on the go.</p>
+                <div class="app-badges">
+                    <a href="#" class="app-badge">
+                        <img src="{% static 'img/app-store-badge.png' %}" alt="Download on App Store" class="img-fluid">
+                    </a>
+                    <a href="#" class="app-badge">
+                        <img src="{% static 'img/google-play-badge.png' %}" alt="Get it on Google Play" class="img-fluid">
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <img src="{% static 'img/app-mockup.png' %}" alt="{{ APP_NAME }} Mobile App" class="img-fluid">
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/daterangepicker/3.1.0/daterangepicker.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Initialize hero slider
+        $('.hero-slider').slick({
+            arrows: false,
+            dots: true,
+            infinite: true,
+            speed: 500,
+            fade: true,
+            cssEase: 'linear',
+            autoplay: true,
+            autoplaySpeed: 5000
+        });
+        
+        // Initialize testimonial slider
+        $('.testimonial-slider').slick({
+            dots: true,
+            infinite: true,
+            speed: 500,
+            slidesToShow: 3,
+            slidesToScroll: 1,
+            responsive: [
+                {
+                    breakpoint: 992,
+                    settings: {
+                        slidesToShow: 2
+                    }
+                },
+                {
+                    breakpoint: 576,
+                    settings: {
+                        slidesToShow: 1
+                    }
+                }
+            ]
+        });
+        
+        // Initialize date picker
+        $('#date_range').daterangepicker({
+            opens: 'left',
+            autoApply: true,
+            minDate: new Date(),
+            locale: {
+                format: 'MMM D, YYYY'
+            }
+        });
+    });
+</script>
+{% endblock %}

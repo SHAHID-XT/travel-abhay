@@ -1,0 +1,77 @@
+<div class="footer-top py-5">
+    <div class="container">
+        <div class="row">
+            <!-- Company Info -->
+            <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
+                <div class="footer-logo mb-3">
+                    <img src="{% static 'img/logo-light.png' %}" alt="{{ APP_NAME }} Logo" class="img-fluid">
+                </div>
+                <p>{{ APP_NAME }} connects travelers with exceptional travel experiences around the world. Discover, book, and enjoy your next adventure with us.</p>
+                <div class="social-icons mt-3">
+                    <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-youtube"></i></a>
+                </div>
+            </div>
+            
+            <!-- Quick Links -->
+            <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
+                <h4>Quick Links</h4>
+                <ul class="footer-links">
+                    <li><a href="{% url 'destinations:list' %}">Destinations</a></li>
+                    <li><a href="{% url 'packages:list' %}">Travel Packages</a></li>
+                    <li><a href="{% url 'core:about' %}">About Us</a></li>
+                    <li><a href="{% url 'core:contact' %}">Contact Us</a></li>
+                    <li><a href="{% url 'core:blog' %}">Travel Blog</a></li>
+                    <li><a href="{% url 'core:faq' %}">FAQ</a></li>
+                </ul>
+            </div>
+            
+            <!-- Features -->
+            <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
+                <h4>Features</h4>
+                <ul class="footer-links">
+                    <li><a href="{% url 'packages:map' %}">Interactive Map</a></li>
+                    <li><a href="{% url 'packages:compare' %}">Package Comparison</a></li>
+                    <li><a href="{% url 'accounts:become_seller' %}">Become a Seller</a></li>
+                    <li><a href="{% url 'core:affiliate' %}">Affiliate Program</a></li>
+                    <li><a href="{% url 'core:reviews' %}">Customer Reviews</a></li>
+                    <li><a href="{% url 'core:support' %}">Support Center</a></li>
+                </ul>
+            </div>
+            
+            <!-- Contact Info -->
+            <div class="col-lg-3 col-md-6">
+                <h4>Contact Us</h4>
+                <ul class="contact-info">
+                    <li><i class="fas fa-map-marker-alt"></i> 123 Travel Street, Adventure City</li>
+                    <li><i class="fas fa-phone"></i> +1 (555) 123-4567</li>
+                    <li><i class="fas fa-envelope"></i> <a href="mailto:info@tripio.com">info@tripio.com</a></li>
+                    <li><i class="fas fa-clock"></i> Mon-Fri: 9:00 AM - 6:00 PM</li>
+                </ul>
+                <div class="payment-methods mt-3">
+                    <img src="{% static 'img/payment-methods.png' %}" alt="Payment Methods" class="img-fluid">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="footer-bottom py-3">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <p class="mb-0">&copy; 2025 {{ APP_NAME }}. All rights reserved.</p>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <ul class="footer-bottom-links">
+                    <li><a href="{% url 'core:terms' %}">Terms & Conditions</a></li>
+                    <li><a href="{% url 'core:privacy' %}">Privacy Policy</a></li>
+                    <li><a href="{% url 'core:cookies' %}">Cookie Policy</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

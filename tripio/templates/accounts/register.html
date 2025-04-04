@@ -1,0 +1,211 @@
+{% extends 'base.html' %}
+
+{% block title %}Register | {{ APP_NAME }}{% endblock %}
+
+{% block content %}
+<section class="auth-section py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="auth-card">
+                    <div class="auth-header text-center mb-4">
+                        <h2>Create Your Account</h2>
+                        <p>Join {{ APP_NAME }} to discover amazing travel experiences</p>
+                    </div>
+                    
+                    <form method="post" class="auth-form">
+                        {% csrf_token %}
+                        
+                        <!-- Error messages -->
+                        {% if form.errors %}
+                            <div class="alert alert-danger">
+                                <p>Please correct the errors below.</p>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="row">
+                            <!-- First Name -->
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name</label>
+                                {{ form.first_name }}
+                                {% if form.first_name.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.first_name.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Last Name -->
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name</label>
+                                {{ form.last_name }}
+                                {% if form.last_name.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.last_name.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <!-- Email -->
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.email.id_for_label }}" class="form-label">Email Address</label>
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.email.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Username -->
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
+                                {{ form.username }}
+                                {% if form.username.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.username.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <!-- Password -->
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.password1.id_for_label }}" class="form-label">Password</label>
+                                {{ form.password1 }}
+                                <div class="form-text">
+                                    Your password must be at least 10 characters long and contain letters, numbers, and special characters.
+                                </div>
+                                {% if form.password1.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.password1.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Confirm Password -->
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.password2.id_for_label }}" class="form-label">Confirm Password</label>
+                                {{ form.password2 }}
+                                {% if form.password2.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.password2.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Account Type -->
+                        <div class="mb-3">
+                            <label class="form-label">Account Type</label>
+                            <div class="account-type-selector">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="account-type-card {% if form.role.value == 'buyer' %}selected{% endif %}">
+                                            <input type="radio" name="{{ form.role.name }}" value="buyer" id="role_buyer" class="account-type-input" {% if form.role.value == 'buyer' %}checked{% endif %}>
+                                            <label for="role_buyer" class="account-type-label">
+                                                <div class="account-type-icon">
+                                                    <i class="fas fa-suitcase"></i>
+                                                </div>
+                                                <div class="account-type-details">
+                                                    <h4>Traveler</h4>
+                                                    <p>I want to book travel experiences</p>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="account-type-card {% if form.role.value == 'seller' %}selected{% endif %}">
+                                            <input type="radio" name="{{ form.role.name }}" value="seller" id="role_seller" class="account-type-input" {% if form.role.value == 'seller' %}checked{% endif %}>
+                                            <label for="role_seller" class="account-type-label">
+                                                <div class="account-type-icon">
+                                                    <i class="fas fa-store"></i>
+                                                </div>
+                                                <div class="account-type-details">
+                                                    <h4>Travel Provider</h4>
+                                                    <p>I want to sell travel experiences</p>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% if form.role.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.role.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Terms and Conditions -->
+                        <div class="mb-3">
+                            <div class="form-check">
+                                {{ form.terms_accepted }}
+                                <label class="form-check-label" for="{{ form.terms_accepted.id_for_label }}">
+                                    I agree to the <a href="{% url 'core:terms' %}" target="_blank">Terms and Conditions</a> and <a href="{% url 'core:privacy' %}" target="_blank">Privacy Policy</a>
+                                </label>
+                            </div>
+                            {% if form.terms_accepted.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.terms_accepted.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Submit button -->
+                        <div class="mb-3">
+                            <button type="submit" class="btn btn-primary w-100">Create Account</button>
+                        </div>
+                    </form>
+                    
+                    <!-- Login link -->
+                    <div class="text-center mt-4">
+                        <p>Already have an account? <a href="{% url 'accounts:login' %}">Login</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Account type selection
+        $('.account-type-card').click(function() {
+            $('.account-type-card').removeClass('selected');
+            $(this).addClass('selected');
+            $(this).find('input[type="radio"]').prop('checked', true);
+        });
+        
+        // Password strength indicator
+        $('#id_password1').on('input', function() {
+            var password = $(this).val();
+            var strength = 0;
+            
+            if (password.length >= 10) strength += 1;
+            if (/[A-Z]/.test(password)) strength += 1;
+            if (/[a-z]/.test(password)) strength += 1;
+            if (/[0-9]/.test(password)) strength += 1;
+            if (/[^A-Za-z0-9]/.test(password)) strength += 1;
+            
+            var strengthBar = '<div class="password-strength mt-2">';
+            for (var i = 0; i < 5; i++) {
+                if (i < strength) {
+                    strengthBar += '<div class="strength-segment active"></div>';
+                } else {
+                    strengthBar += '<div class="strength-segment"></div>';
+                }
+            }
+            strengthBar += '</div>';
+            
+            $(this).next('.password-strength').remove();
+            $(this).after(strengthBar);
+        });
+    });
+</script>
+{% endblock %}

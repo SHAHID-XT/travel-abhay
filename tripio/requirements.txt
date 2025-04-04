@@ -1,0 +1,69 @@
+# Django and extensions
+Django==4.2.4
+django-environ==0.9.0
+django-debug-toolbar==3.8.1
+django-storages==1.13.2
+django-crispy-forms==2.0
+crispy-bootstrap5==0.7
+django-allauth==0.54.0
+django-filter==23.2
+django-taggit==4.0.0
+django-mptt==0.14.0
+django-redis==5.3.0
+django-cors-headers==4.2.0
+djangorestframework==3.14.0
+django-rest-auth==0.9.5
+dj-rest-auth==3.0.0
+django-otp==1.1.5
+django-two-factor-auth==1.15.3
+easy-thumbnails==2.8.5
+django-modeltranslation==0.18.9
+
+# Database and Cache
+psycopg2-binary==2.9.7
+redis==4.6.0
+
+# GeoDjango support
+GDAL==3.6.4
+pyproj==3.5.0
+
+# Authentication and Security
+argon2-cffi==21.3.0
+qrcode==7.4.2
+pyotp==2.8.0
+
+# Task Queue
+celery==5.3.1
+django-celery-beat==2.5.0
+
+# AWS S3 for static and media files
+boto3==1.28.17
+
+# Image Processing
+Pillow==10.0.0
+
+# Payment Processing
+stripe==5.5.0
+
+# Web Server
+gunicorn==21.2.0
+whitenoise==6.5.0
+
+# Utilities
+python-dateutil==2.8.2
+pytz==2023.3
+requests==2.31.0
+markdown==3.4.4
+bleach==6.0.0
+pycountry==23.12.11
+babel==2.12.1
+phonenumbers==8.13.18
+
+# Development
+pytest==7.4.0
+pytest-django==4.5.2
+factory-boy==3.2.1
+coverage==7.3.0
+black==23.7.0
+flake8==6.1.0
+isort==5.12.0

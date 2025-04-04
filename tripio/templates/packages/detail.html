@@ -1,0 +1,732 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ package.title }} | {{ APP_NAME }}{% endblock %}
+
+{% block meta_description %}{{ package.short_description }}{% endblock %}
+
+{% block content %}
+<div class="package-header">
+    <div class="package-header-image" style="background-image: url('{{ package.main_image.url }}')">
+        <div class="package-header-overlay">
+            <div class="container">
+                <div class="package-header-content">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{% url 'core:home' %}">Home</a></li>
+                            <li class="breadcrumb-item"><a href="{% url 'packages:list' %}">Packages</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">{{ package.title }}</li>
+                        </ol>
+                    </nav>
+                    <h1 class="package-title">{{ package.title }}</h1>
+                    <div class="package-meta">
+                        <span class="badge bg-primary">{{ package.get_transportation_type_display }}</span>
+                        <span class="badge bg-secondary">{{ package.get_difficulty_level_display }}</span>
+                        <span><i class="fas fa-map-marker-alt"></i> {{ package.destinations.first.name }}</span>
+                        <span><i class="fas fa-clock"></i> {{ package.duration_days }} days</span>
+                        <span><i class="fas fa-users"></i> Max {{ package.max_travelers }} travelers</span>
+                        <span class="rating">
+                            <i class="fas fa-star"></i> {{ package.average_rating|floatformat:1 }}
+                            <span class="rating-count">({{ package.review_count }} reviews)</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="package-details py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8">
+                <!-- Package Overview -->
+                <div class="content-card mb-4">
+                    <div class="card-header">
+                        <h2>Overview</h2>
+                    </div>
+                    <div class="card-body">
+                        <p>{{ package.description|linebreaks }}</p>
+                        
+                        <div class="package-gallery mt-4">
+                            <h3>Gallery</h3>
+                            <div class="row g-2">
+                                {% for image in package.images.all %}
+                                    <div class="col-md-4 col-6">
+                                        <a href="{{ image.image.url }}" class="gallery-item" data-lightbox="package-gallery" data-title="{{ image.title }}">
+                                            <img src="{{ image.image.url }}" alt="{{ image.alt_text }}" class="img-fluid rounded">
+                                        </a>
+                                    </div>
+                                {% empty %}
+                                    <div class="col-12">
+                                        <p>No additional images available.</p>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Itinerary -->
+                <div class="content-card mb-4">
+                    <div class="card-header">
+                        <h2>Itinerary</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="itinerary-timeline">
+                            {% for day in package.itinerary_days.all %}
+                                <div class="itinerary-day">
+                                    <div class="itinerary-day-header" data-bs-toggle="collapse" data-bs-target="#day{{ day.day }}" aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="day{{ day.day }}">
+                                        <div class="day-number">Day {{ day.day }}</div>
+                                        <h3 class="day-title">{{ day.title }}</h3>
+                                        <div class="day-toggle">
+                                            <i class="fas fa-chevron-down"></i>
+                                        </div>
+                                    </div>
+                                    <div class="itinerary-day-content collapse {% if forloop.first %}show{% endif %}" id="day{{ day.day }}">
+                                        <div class="day-description">
+                                            {{ day.description|linebreaks }}
+                                        </div>
+                                        <div class="day-details">
+                                            {% if day.accommodation %}
+                                                <div class="detail-item">
+                                                    <i class="fas fa-bed"></i>
+                                                    <span>Accommodation: {{ day.accommodation }}</span>
+                                                </div>
+                                            {% endif %}
+                                            {% if day.meals_included %}
+                                                <div class="detail-item">
+                                                    <i class="fas fa-utensils"></i>
+                                                    <span>Meals: {{ day.meals_included }}</span>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% empty %}
+                                <p>No itinerary details available.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Inclusions & Exclusions -->
+                <div class="content-card mb-4">
+                    <div class="card-header">
+                        <h2>What's Included & Excluded</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h3>Included</h3>
+                                <div class="included-list">
+                                    {% for item in package.what_is_included.splitlines %}
+                                        {% if item %}
+                                            <div class="included-item">
+                                                <i class="fas fa-check-circle text-success"></i>
+                                                <span>{{ item }}</span>
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h3>Excluded</h3>
+                                <div class="excluded-list">
+                                    {% for item in package.what_is_excluded.splitlines %}
+                                        {% if item %}
+                                            <div class="excluded-item">
+                                                <i class="fas fa-times-circle text-danger"></i>
+                                                <span>{{ item }}</span>
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Map & Locations -->
+                <div class="content-card mb-4">
+                    <div class="card-header">
+                        <h2>Map & Destinations</h2>
+                    </div>
+                    <div class="card-body">
+                        <div id="packageMap" class="package-map mb-4"></div>
+                        
+                        <div class="destinations-list">
+                            <div class="row">
+                                {% for destination in package.destinations.all %}
+                                    <div class="col-md-6 mb-3">
+                                        <div class="destination-card-mini d-flex">
+                                            <div class="destination-image-mini">
+                                                <img src="{{ destination.main_image.url }}" alt="{{ destination.name }}" class="img-fluid rounded">
+                                            </div>
+                                            <div class="destination-details-mini">
+                                                <h4>{{ destination.name }}</h4>
+                                                <p>{{ destination.short_description|truncatewords:10 }}</p>
+                                                <a href="{{ destination.get_absolute_url }}" class="btn btn-sm btn-outline-primary">View Details</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Reviews -->
+                <div class="content-card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h2>Reviews</h2>
+                        <div class="review-summary">
+                            <div class="average-rating">{{ package.average_rating|floatformat:1 }}</div>
+                            <div class="rating-stars">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= package.average_rating|floatformat:0 %}
+                                        <i class="fas fa-star"></i>
+                                    {% else %}
+                                        <i class="far fa-star"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <div class="rating-count">{{ package.review_count }} reviews</div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {% if reviews %}
+                            <div class="reviews-list">
+                                {% for review in reviews %}
+                                    <div class="review-item">
+                                        <div class="review-header">
+                                            <div class="reviewer-info">
+                                                {% if review.user.profile_image %}
+                                                    <img src="{{ review.user.profile_image.url }}" alt="{{ review.user.get_full_name }}" class="reviewer-avatar">
+                                                {% else %}
+                                                    <div class="reviewer-avatar-placeholder">{{ review.user.get_full_name|make_list|first }}</div>
+                                                {% endif %}
+                                                <div class="reviewer-details">
+                                                    <h4>{{ review.user.get_full_name }}</h4>
+                                                    <div class="review-date">{{ review.created_at|date:"F d, Y" }}</div>
+                                                </div>
+                                            </div>
+                                            <div class="review-rating">
+                                                {% for i in "12345" %}
+                                                    {% if forloop.counter <= review.rating %}
+                                                        <i class="fas fa-star"></i>
+                                                    {% else %}
+                                                        <i class="far fa-star"></i>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                        <h5 class="review-title">{{ review.title }}</h5>
+                                        <div class="review-content">
+                                            <p>{{ review.content|linebreaks }}</p>
+                                        </div>
+                                        {% if review.images.exists %}
+                                            <div class="review-images">
+                                                <div class="row g-2">
+                                                    {% for image in review.images.all %}
+                                                        <div class="col-md-3 col-6">
+                                                            <a href="{{ image.image.url }}" class="review-image" data-lightbox="review-{{ review.id }}" data-title="{{ image.caption }}">
+                                                                <img src="{{ image.image.url }}" alt="{{ image.caption }}" class="img-fluid rounded">
+                                                            </a>
+                                                        </div>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            
+                            <!-- Pagination for reviews -->
+                            {% if reviews.has_other_pages %}
+                                <nav aria-label="Reviews pagination" class="mt-4">
+                                    <ul class="pagination justify-content-center">
+                                        {% if reviews.has_previous %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page={{ reviews.previous_page_number }}#reviews" aria-label="Previous">
+                                                    <span aria-hidden="true">&laquo;</span>
+                                                </a>
+                                            </li>
+                                        {% else %}
+                                            <li class="page-item disabled">
+                                                <a class="page-link" href="#" aria-label="Previous">
+                                                    <span aria-hidden="true">&laquo;</span>
+                                                </a>
+                                            </li>
+                                        {% endif %}
+                                        
+                                        {% for i in reviews.paginator.page_range %}
+                                            {% if reviews.number == i %}
+                                                <li class="page-item active">
+                                                    <a class="page-link" href="?page={{ i }}#reviews">{{ i }}</a>
+                                                </li>
+                                            {% else %}
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?page={{ i }}#reviews">{{ i }}</a>
+                                                </li>
+                                            {% endif %}
+                                        {% endfor %}
+                                        
+                                        {% if reviews.has_next %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page={{ reviews.next_page_number }}#reviews" aria-label="Next">
+                                                    <span aria-hidden="true">&raquo;</span>
+                                                </a>
+                                            </li>
+                                        {% else %}
+                                            <li class="page-item disabled">
+                                                <a class="page-link" href="#" aria-label="Next">
+                                                    <span aria-hidden="true">&raquo;</span>
+                                                </a>
+                                            </li>
+                                        {% endif %}
+                                    </ul>
+                                </nav>
+                            {% endif %}
+                        {% else %}
+                            <div class="no-reviews">
+                                <p class="text-center">No reviews yet. Be the first to review this package!</p>
+                            </div>
+                        {% endif %}
+                        
+                        {% if user.is_authenticated and has_booked and not has_reviewed %}
+                            <div class="write-review-section mt-4">
+                                <h3>Write a Review</h3>
+                                <form method="post" action="{% url 'reviews:create' %}" enctype="multipart/form-data">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="package_id" value="{{ package.id }}">
+                                    
+                                    <div class="mb-3">
+                                        <label for="rating" class="form-label">Rating</label>
+                                        <div class="rating-input">
+                                            <input type="hidden" name="rating" id="rating" value="5">
+                                            <div class="rating-stars-input">
+                                                <i class="fas fa-star" data-rating="1"></i>
+                                                <i class="fas fa-star" data-rating="2"></i>
+                                                <i class="fas fa-star" data-rating="3"></i>
+                                                <i class="fas fa-star" data-rating="4"></i>
+                                                <i class="fas fa-star" data-rating="5"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="title" class="form-label">Title</label>
+                                        <input type="text" name="title" id="title" class="form-control" placeholder="Summarize your experience" required>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="content" class="form-label">Review</label>
+                                        <textarea name="content" id="content" class="form-control" rows="5" placeholder="Share your experience in detail" required></textarea>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="images" class="form-label">Add Photos (optional)</label>
+                                        <input type="file" name="images" id="images" class="form-control" multiple accept="image/*">
+                                    </div>
+                                    
+                                    <div class="text-end">
+                                        <button type="submit" class="btn btn-primary">Submit Review</button>
+                                    </div>
+                                </form>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <!-- Booking Widget -->
+                <div class="booking-widget-container">
+                    <div class="booking-widget" id="bookingWidget">
+                        <div class="widget-header">
+                            <h3>Book This Package</h3>
+                        </div>
+                        <div class="widget-body">
+                            <div class="package-price">
+                                {% if package.discount_price %}
+                                    <div class="original-price">{{ package.currency }} {{ package.base_price }}</div>
+                                    <div class="current-price">{{ package.currency }} {{ package.discount_price }}</div>
+                                    <div class="discount-badge">{{ package.get_discount_percentage }}% OFF</div>
+                                {% else %}
+                                    <div class="current-price">{{ package.currency }} {{ package.base_price }}</div>
+                                {% endif %}
+                                <div class="price-note">per person</div>
+                            </div>
+                            
+                            <form action="{% url 'bookings:create' %}" method="post" id="bookingForm">
+                                {% csrf_token %}
+                                <input type="hidden" name="package_id" value="{{ package.id }}">
+                                
+                                <div class="mb-3">
+                                    <label for="availability" class="form-label">Available Dates</label>
+                                    <select name="availability_id" id="availability" class="form-select" required>
+                                        <option value="">Select departure date</option>
+                                        {% for availability in availabilities %}
+                                            <option value="{{ availability.id }}" data-slots="{{ availability.available_slots }}" data-price="{% if availability.special_price %}{{ availability.special_price }}{% elif package.discount_price %}{{ package.discount_price }}{% else %}{{ package.base_price }}{% endif %}">
+                                                {{ availability.start_date|date:"M d, Y" }} to {{ availability.end_date|date:"M d, Y" }} ({{ availability.available_slots }} slots left)
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="travelers" class="form-label">Number of Travelers</label>
+                                    <select name="num_travelers" id="travelers" class="form-select" required>
+                                        <option value="1">1 Traveler</option>
+                                        <option value="2">2 Travelers</option>
+                                        <option value="3">3 Travelers</option>
+                                        <option value="4">4 Travelers</option>
+                                        <option value="5">5 Travelers</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="price-calculation mb-3">
+                                    <div class="price-row">
+                                        <span>Price per person</span>
+                                        <span id="pricePerPerson">{{ package.currency }} {% if package.discount_price %}{{ package.discount_price }}{% else %}{{ package.base_price }}{% endif %}</span>
+                                    </div>
+                                    <div class="price-row">
+                                        <span id="travelerCount">1 Traveler</span>
+                                        <span id="totalBeforeTax">{{ package.currency }} {% if package.discount_price %}{{ package.discount_price }}{% else %}{{ package.base_price }}{% endif %}</span>
+                                    </div>
+                                    <div class="price-row">
+                                        <span>Tax & Fees</span>
+                                        <span id="taxAmount">{{ package.currency }} 0</span>
+                                    </div>
+                                    <div class="price-divider"></div>
+                                    <div class="price-row total">
+                                        <span>Total</span>
+                                        <span id="totalPrice">{{ package.currency }} {% if package.discount_price %}{{ package.discount_price }}{% else %}{{ package.base_price }}{% endif %}</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="booking-actions">
+                                    <button type="submit" class="btn btn-primary btn-lg w-100 mb-2">Book Now</button>
+                                    {% if user.is_authenticated %}
+                                        <button type="button" class="btn btn-outline-primary w-100 add-to-wishlist" data-package-id="{{ package.id }}">
+                                            {% if is_in_wishlist %}
+                                                <i class="fas fa-heart"></i> Saved to Wishlist
+                                            {% else %}
+                                                <i class="far fa-heart"></i> Add to Wishlist
+                                            {% endif %}
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Seller Information -->
+                    <div class="seller-info mt-4">
+                        <div class="seller-header">
+                            <h3>Travel Provider</h3>
+                        </div>
+                        <div class="seller-body">
+                            <div class="seller-profile">
+                                {% if package.seller.profile_image %}
+                                    <img src="{{ package.seller.profile_image.url }}" alt="{{ package.seller.get_full_name }}" class="seller-avatar">
+                                {% else %}
+                                    <div class="seller-avatar-placeholder">{{ package.seller.get_full_name|make_list|first }}</div>
+                                {% endif %}
+                                <div class="seller-details">
+                                    <h4>{{ package.seller.get_full_name }}</h4>
+                                    {% if package.seller.is_verified_seller %}
+                                        <div class="verified-badge">
+                                            <i class="fas fa-check-circle"></i> Verified
+                                        </div>
+                                    {% endif %}
+                                    <div class="seller-meta">
+                                        <span><i class="fas fa-map-marker-alt"></i> {{ package.seller.country }}</span>
+                                        <span><i class="fas fa-globe"></i> Member since {{ package.seller.date_joined|date:"F Y" }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="seller-actions mt-3">
+                                {% if user.is_authenticated and user.id != package.seller.id %}
+                                    <a href="{% url 'chat:create' %}?seller_id={{ package.seller.id }}&package_id={{ package.id }}" class="btn btn-outline-primary w-100">
+                                        <i class="fas fa-comments"></i> Contact Provider
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Share Widget -->
+                    <div class="share-widget mt-4">
+                        <div class="share-header">
+                            <h3>Share This Package</h3>
+                        </div>
+                        <div class="share-body">
+                            <div class="social-share-buttons">
+                                <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" class="btn btn-outline-secondary share-btn facebook" target="_blank">
+                                    <i class="fab fa-facebook-f"></i>
+                                </a>
+                                <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}&text={{ package.title }}" class="btn btn-outline-secondary share-btn twitter" target="_blank">
+                                    <i class="fab fa-twitter"></i>
+                                </a>
+                                <a href="https://pinterest.com/pin/create/button/?url={{ request.build_absolute_uri }}&media={{ package.main_image.url }}&description={{ package.title }}" class="btn btn-outline-secondary share-btn pinterest" target="_blank">
+                                    <i class="fab fa-pinterest-p"></i>
+                                </a>
+                                <a href="mailto:?subject={{ package.title }}&body=Check out this amazing travel package: {{ request.build_absolute_uri }}" class="btn btn-outline-secondary share-btn email">
+                                    <i class="fas fa-envelope"></i>
+                                </a>
+                                <button class="btn btn-outline-secondary share-btn copy-link" data-url="{{ request.build_absolute_uri }}">
+                                    <i class="fas fa-link"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Similar Packages -->
+<section class="similar-packages py-5 bg-light">
+    <div class="container">
+        <div class="section-header text-center mb-4">
+            <h2>Similar Packages</h2>
+            <p>Explore other travel experiences you might enjoy</p>
+        </div>
+        
+        <div class="row g-4">
+            {% for package in similar_packages %}
+                <div class="col-lg-4 col-md-6">
+                    <div class="package-card">
+                        <div class="package-image">
+                            <img src="{{ package.main_image.url }}" alt="{{ package.title }}" class="img-fluid">
+                            {% if package.discount_price %}
+                                <div class="package-badge">{{ package.get_discount_percentage }}% OFF</div>
+                            {% endif %}
+                        </div>
+                        <div class="package-details">
+                            <h3><a href="{{ package.get_absolute_url }}">{{ package.title }}</a></h3>
+                            <div class="package-meta">
+                                <span><i class="fas fa-map-marker-alt"></i> {{ package.destinations.first.name }}</span>
+                                <span><i class="fas fa-clock"></i> {{ package.duration_days }} days</span>
+                                <span><i class="fas fa-star"></i> {{ package.average_rating }}</span>
+                            </div>
+                            <p>{{ package.short_description|truncatewords:15 }}</p>
+                            <div class="package-footer">
+                                <div class="package-price">
+                                    {% if package.discount_price %}
+                                        <span class="original-price">{{ package.currency }} {{ package.base_price }}</span>
+                                        <span class="current-price">{{ package.currency }} {{ package.discount_price }}</span>
+                                    {% else %}
+                                        <span class="current-price">{{ package.currency }} {{ package.base_price }}</span>
+                                    {% endif %}
+                                </div>
+                                <a href="{{ package.get_absolute_url }}" class="btn btn-sm btn-primary">View Details</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12 text-center">
+                    <p>No similar packages available at the moment.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap" async defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/js/lightbox.min.js"></script>
+<script>
+    // Initialize Google Map
+    function initMap() {
+        var mapOptions = {
+            zoom: 10,
+            mapTypeId: google.maps.MapTypeId.TERRAIN
+        };
+        
+        var map = new google.maps.Map(document.getElementById('packageMap'), mapOptions);
+        var bounds = new google.maps.LatLngBounds();
+        var infoWindow = new google.maps.InfoWindow();
+        
+        var destinations = [
+            {% for destination in package.destinations.all %}
+                {
+                    name: "{{ destination.name }}",
+                    lat: {{ destination.location.y }},
+                    lng: {{ destination.location.x }},
+                    url: "{{ destination.get_absolute_url }}"
+                }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ];
+        
+        // Add markers for each destination
+        for (var i = 0; i < destinations.length; i++) {
+            var position = new google.maps.LatLng(destinations[i].lat, destinations[i].lng);
+            bounds.extend(position);
+            
+            var marker = new google.maps.Marker({
+                position: position,
+                map: map,
+                title: destinations[i].name,
+                animation: google.maps.Animation.DROP
+            });
+            
+            // Add info window
+            google.maps.event.addListener(marker, 'click', (function(marker, i) {
+                return function() {
+                    var content = '<div class="map-info-window">' +
+                        '<h5>' + destinations[i].name + '</h5>' +
+                        '<a href="' + destinations[i].url + '" class="btn btn-sm btn-primary">View Details</a>' +
+                        '</div>';
+                    
+                    infoWindow.setContent(content);
+                    infoWindow.open(map, marker);
+                }
+            })(marker, i));
+        }
+        
+        // Fit map to show all markers
+        map.fitBounds(bounds);
+        
+        // If only one marker, zoom out a bit
+        if (destinations.length === 1) {
+            google.maps.event.addListenerOnce(map, 'bounds_changed', function() {
+                map.setZoom(10);
+            });
+        }
+    }
+    
+    $(document).ready(function() {
+        // Initialize lightbox
+        lightbox.option({
+            'resizeDuration': 200,
+            'wrapAround': true,
+            'showImageNumberLabel': false
+        });
+        
+        // Sticky booking widget
+        var bookingWidget = $('#bookingWidget');
+        var widgetOffset = bookingWidget.offset().top;
+        
+        $(window).scroll(function() {
+            var scrollTop = $(window).scrollTop();
+            var footerOffset = $('.site-footer').offset().top;
+            var widgetHeight = bookingWidget.outerHeight();
+            
+            if (scrollTop > widgetOffset - 20 && scrollTop + widgetHeight < footerOffset - 20) {
+                bookingWidget.addClass('sticky');
+            } else {
+                bookingWidget.removeClass('sticky');
+            }
+        });
+        
+        // Rating stars in review form
+        $('.rating-stars-input i').hover(
+            function() {
+                var rating = $(this).data('rating');
+                
+                $('.rating-stars-input i').each(function() {
+                    if ($(this).data('rating') <= rating) {
+                        $(this).addClass('active');
+                    } else {
+                        $(this).removeClass('active');
+                    }
+                });
+            },
+            function() {
+                var rating = $('#rating').val();
+                
+                $('.rating-stars-input i').each(function() {
+                    if ($(this).data('rating') <= rating) {
+                        $(this).addClass('active');
+                    } else {
+                        $(this).removeClass('active');
+                    }
+                });
+            }
+        );
+        
+        $('.rating-stars-input i').click(function() {
+            var rating = $(this).data('rating');
+            $('#rating').val(rating);
+            
+            $('.rating-stars-input i').each(function() {
+                if ($(this).data('rating') <= rating) {
+                    $(this).addClass('active');
+                } else {
+                    $(this).removeClass('active');
+                }
+            });
+        });
+        
+        // Price calculation
+        $('#availability, #travelers').change(function() {
+            calculatePrice();
+        });
+        
+        function calculatePrice() {
+            var selectedOption = $('#availability option:selected');
+            var travelers = parseInt($('#travelers').val());
+            
+            if (selectedOption.val()) {
+                var pricePerPerson = parseFloat(selectedOption.data('price'));
+                var currency = '{{ package.currency }}';
+                var subtotal = pricePerPerson * travelers;
+                var taxRate = 0.05; // 5% tax rate
+                var tax = subtotal * taxRate;
+                var total = subtotal + tax;
+                
+                $('#pricePerPerson').text(currency + ' ' + pricePerPerson.toFixed(2));
+                $('#travelerCount').text(travelers + (travelers > 1 ? ' Travelers' : ' Traveler'));
+                $('#totalBeforeTax').text(currency + ' ' + subtotal.toFixed(2));
+                $('#taxAmount').text(currency + ' ' + tax.toFixed(2));
+                $('#totalPrice').text(currency + ' ' + total.toFixed(2));
+            }
+        }
+        
+        // Wishlist functionality
+        $('.add-to-wishlist').click(function() {
+            var packageId = $(this).data('package-id');
+            var button = $(this);
+            
+            $.ajax({
+                url: '{% url "bookings:toggle_wishlist" %}',
+                type: 'POST',
+                data: {
+                    'package_id': packageId,
+                    'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val()
+                },
+                success: function(response) {
+                    if (response.added) {
+                        button.html('<i class="fas fa-heart"></i> Saved to Wishlist');
+                    } else {
+                        button.html('<i class="far fa-heart"></i> Add to Wishlist');
+                    }
+                }
+            });
+        });
+        
+        // Copy link to clipboard
+        $('.copy-link').click(function() {
+            var url = $(this).data('url');
+            var tempInput = $('<input>');
+            $('body').append(tempInput);
+            tempInput.val(url).select();
+            document.execCommand('copy');
+            tempInput.remove();
+            
+            // Show success message
+            var originalHtml = $(this).html();
+            $(this).html('<i class="fas fa-check"></i>');
+            
+            setTimeout(function() {
+                $('.copy-link').html(originalHtml);
+            }, 2000);
+        });
+    });
+</script>
+{% endblock %}
