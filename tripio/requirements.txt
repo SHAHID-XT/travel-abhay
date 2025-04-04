@@ -35,7 +35,7 @@ pyotp==2.8.0
 # Task Queue
 celery==5.3.1
 django-celery-beat==2.5.0
-
+django-channels
 # AWS S3 for static and media files
 boto3==1.28.17
 
